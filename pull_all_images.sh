@@ -296,10 +296,8 @@ pull_llm_images() {
     section "Ollama 本地推理"
     pull_image "ollama/ollama:latest"
 
-    section "Open WebUI（原 ghcr.io，已切换 Docker Hub 替代）"
-    # 原：ghcr.io/open-webui/open-webui:main（被墙）
-    # 已在 compose 文件改为 openwebui/open-webui:main
-    pull_image "openwebui/open-webui:main"
+    section "Open WebUI"
+    pull_image "ghcr.io/open-webui/open-webui:main"
 
     section "LiteLLM 模型网关（原 ghcr.io，已切换 Docker Hub 替代）"
     # 原：ghcr.io/berriai/litellm（被墙）
@@ -309,10 +307,9 @@ pull_llm_images() {
     section "Milvus 向量数据库"
     pull_image "milvusdb/milvus:v2.4.0"
 
-    section "Etcd（Milvus 依赖，原 quay.io，已切换 bitnami 替代）"
-    # 原：quay.io/coreos/etcd（不稳定）
-    # 已在 compose 文件改为 bitnami/etcd:latest
-    pull_image "bitnami/etcd:latest"
+    section "Etcd（Milvus 依赖）"
+    # 原 bitnami/etcd 已从 Docker Hub 撤除，改回 quay.io（GitHub Actions 境外可直连）
+    pull_image "quay.io/coreos/etcd:v3.5.12"
 
     section "Milvus 管理界面 Attu"
     pull_image "zilliz/attu:latest"
