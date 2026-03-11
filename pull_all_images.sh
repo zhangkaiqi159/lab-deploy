@@ -77,11 +77,21 @@ pull_image_acr() {
 
     # 还原 ACR 路径规则（与 workflow 中 sync_image 函数保持一致）
     # mysql:8.0          -> ACR_NAMESPACE/mysql:8.0
-    # minio/minio:latest -> ACR_NAMESPACE/minio__minio:latest
+    # minio/minio:latest -> ACR_NAMESPACE/minio:minio-latest
+    # prom/prometheus    -> ACR_NAMESPACE/prometheus:prom-latest
     local name_part="${target%%:*}"
     local tag_part="${target##*:}"
-    local safe_name="${name_part//\//__}"
-    local acr_src="${ACR_REGISTRY}/${ACR_NAMESPACE}/${safe_name}:${tag_part}"
+
+    if [[ "$name_part" == */* ]]; then
+        local org="${name_part%%/*}"
+        local repo="${name_part##*/}"
+        local acr_repo="${repo}"
+        local acr_tag="${org}-${tag_part}"
+    else
+        local acr_repo="${name_part}"
+        local acr_tag="${tag_part}"
+    fi
+    local acr_src="${ACR_REGISTRY}/${ACR_NAMESPACE}/${acr_repo}:${acr_tag}"
 
     echo -e "  从 ACR 拉取：${BOLD}${acr_src}${NC} ..."
     if docker pull "$acr_src" 2>/tmp/dp_err.txt; then
