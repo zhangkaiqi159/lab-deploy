@@ -1,0 +1,18 @@
+{
+  "data-root": "/data/docker",
+  "insecure-registries": [
+    "registry.lab.internal"
+  ],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-file": "5",
+    "max-size": "100m"
+  },
+  "registry-mirrors": [
+    "https://docker.1ms.run",
+    "https://docker.m.daocloud.io",
+    "https://docker.nju.edu.cn",
+    "https://docker.mirrors.sjtug.sjtu.edu.cn",
+    "https://dockerproxy.net"
+  ]
+}

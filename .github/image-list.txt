@@ -1,0 +1,46 @@
+# ============================================================
+# 实验室镜像清单 - GitHub Actions 自动同步到阿里云 ACR
+# 格式：原始镜像名（每行一个，# 开头为注释，空行忽略）
+# 修改此文件后 push 到 GitHub 即可触发自动同步
+# ============================================================
+
+# ── 数据库层 ──────────────────────────────────────────────────
+mysql:8.0
+redis:7.2-alpine
+mongo:6.0
+influxdb:2.7
+
+# ── 搜索 / 日志 ───────────────────────────────────────────────
+elasticsearch:8.12.0
+kibana:8.12.0
+
+# ── 对象存储 ──────────────────────────────────────────────────
+minio/minio:latest
+
+# ── 消息队列 ──────────────────────────────────────────────────
+rabbitmq:3.12-management-alpine
+
+# ── 代码管理 & CI/CD ──────────────────────────────────────────
+gitlab/gitlab-ce:16.9.1-ce.0
+jenkins/jenkins:lts-jdk17
+
+# ── 监控体系 ──────────────────────────────────────────────────
+prom/prometheus:latest
+grafana/grafana:latest
+prom/node-exporter:latest
+zcube/cadvisor:latest
+
+# ── 测试报告 ──────────────────────────────────────────────────
+frankescobar/allure-docker-service:latest
+frankescobar/allure-docker-service-ui:latest
+
+# ── 反向代理 ──────────────────────────────────────────────────
+nginx:alpine
+
+# ── 大模型服务（LLM）─────────────────────────────────────────
+ollama/ollama:latest
+openwebui/open-webui:main
+litellm/litellm:latest
+milvusdb/milvus:v2.4.0
+bitnami/etcd:3.5
+zilliz/attu:latest

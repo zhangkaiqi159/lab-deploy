@@ -1,0 +1,180 @@
+# ============================================================
+# 座舱自动化测试实验室 - 大模型 & 向量数据库服务（阶段三）
+# 包含：Ollama / Open WebUI / Milvus / LiteLLM
+#
+# 前置条件：
+#   - docker-compose.yml（核心服务）已运行
+#   - 若使用 GPU：需安装 NVIDIA Container Toolkit
+#
+# GPU 环境安装：
+#   distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+#   curl -s -L https://nvidia.github.io/libnvidia-container/gpgkey | sudo apt-key add -
+#   curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list \
+#     | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+#   sudo apt-get update && sudo apt-get install -y nvidia-container-toolkit
+#   sudo systemctl restart docker
+#
+# 用法：
+#   # 与核心服务一起启动
+#   docker compose -f docker-compose.yml -f docker-compose.llm.yml --env-file .env up -d
+#
+#   # 仅启动 LLM 服务
+#   docker compose -f docker-compose.llm.yml --env-file .env up -d
+# ============================================================
+
+name: testlab
+
+networks:
+  lab-net:
+    external: true   # 复用核心服务的网络
+
+volumes:
+  ollama_data:
+    driver: local
+    driver_opts: { type: none, o: bind, device: "${DATA_ROOT}/ollama" }
+  milvus_data:
+    driver: local
+    driver_opts: { type: none, o: bind, device: "${DATA_ROOT}/milvus" }
+
+services:
+
+  # ══════════════════════════════════════════
+  # Ollama - 本地大模型推理服务
+  # ══════════════════════════════════════════
+  ollama:
+    image: ollama/ollama:latest
+    container_name: lab-ollama
+    restart: unless-stopped
+    networks: [lab-net]
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      OLLAMA_HOST: "0.0.0.0:11434"
+      OLLAMA_MODELS: /root/.ollama/models
+      TZ: Asia/Shanghai
+    # ── GPU 模式（有 NVIDIA GPU 时取消注释）──
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # ══════════════════════════════════════════
+  # Open WebUI - 大模型 Web 对话界面
+  # 原 ghcr.io/open-webui/open-webui 在国内被墙，改用 Docker Hub 镜像
+  # ══════════════════════════════════════════
+  open-webui:
+    image: openwebui/open-webui:main
+    container_name: lab-open-webui
+    restart: unless-stopped
+    networks: [lab-net]
+    ports:
+      - "3001:8080"
+    environment:
+      OLLAMA_BASE_URL: http://ollama:11434
+      WEBUI_SECRET_KEY: "Lab-WebUI-SecretKey-2025!"
+      WEBUI_AUTH: "true"
+      DEFAULT_LOCALE: zh-CN
+      TZ: Asia/Shanghai
+    volumes:
+      - ${DATA_ROOT}/ollama/webui:/app/backend/data
+    depends_on:
+      ollama:
+        condition: service_healthy
+
+  # ══════════════════════════════════════════
+  # LiteLLM - 统一模型 API 网关（OpenAI 兼容）
+  # 可同时对接 Ollama + DeepSeek + OpenAI 等
+  # ══════════════════════════════════════════
+  litellm:
+    # 原 ghcr.io/berriai/litellm 在国内被墙，改用 Docker Hub 官方镜像
+    image: litellm/litellm:latest
+    container_name: lab-litellm
+    restart: unless-stopped
+    networks: [lab-net]
+    ports:
+      - "4000:4000"
+    environment:
+      LITELLM_MASTER_KEY: "Lab-LiteLLM-MasterKey-2025!"
+      DATABASE_URL: "postgresql://labuser:${MYSQL_PASSWORD}@mysql:3306/litellm"
+      TZ: Asia/Shanghai
+    volumes:
+      - ./config/litellm/config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml", "--port", "4000", "--detailed_debug"]
+    depends_on: [ollama]
+
+  # ══════════════════════════════════════════
+  # Etcd - Milvus 依赖（元数据存储）
+  # ══════════════════════════════════════════
+  milvus-etcd:
+    # 原 quay.io/coreos/etcd 在国内不稳定，改用 bitnami 在 Docker Hub 的版本
+    image: bitnami/etcd:3.5
+    container_name: lab-milvus-etcd
+    restart: unless-stopped
+    networks: [lab-net]
+    environment:
+      # bitnami/etcd 用这套环境变量配置
+      ALLOW_NONE_AUTHENTICATION: "yes"
+      ETCD_AUTO_COMPACTION_MODE: revision
+      ETCD_AUTO_COMPACTION_RETENTION: "1000"
+      ETCD_QUOTA_BACKEND_BYTES: "4294967296"
+      ETCD_ADVERTISE_CLIENT_URLS: http://milvus-etcd:2379
+      ETCD_LISTEN_CLIENT_URLS: http://0.0.0.0:2379
+    volumes:
+      - ${DATA_ROOT}/milvus/etcd:/bitnami/etcd
+
+  # ══════════════════════════════════════════
+  # Milvus Standalone - 向量数据库
+  # 用途：用例语义检索、RAG 知识库
+  # ══════════════════════════════════════════
+  milvus:
+    image: milvusdb/milvus:v2.4.0
+    container_name: lab-milvus
+    restart: unless-stopped
+    networks: [lab-net]
+    ports:
+      - "19530:19530"
+      - "9091:9091"
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: minio:9000
+      MINIO_ACCESS_KEY_ID: "${MINIO_ROOT_USER}"
+      MINIO_SECRET_ACCESS_KEY: "${MINIO_ROOT_PASSWORD}"
+      TZ: Asia/Shanghai
+    volumes:
+      - milvus_data:/var/lib/milvus
+    command: ["milvus", "run", "standalone"]
+    depends_on: [milvus-etcd, minio]
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9091/healthz"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # ══════════════════════════════════════════
+  # Attu - Milvus Web 管理界面
+  # ══════════════════════════════════════════
+  attu:
+    image: zilliz/attu:latest
+    container_name: lab-attu
+    restart: unless-stopped
+    networks: [lab-net]
+    ports:
+      - "8000:3000"
+    environment:
+      MILVUS_URL: milvus:19530
+      TZ: Asia/Shanghai
+    depends_on:
+      milvus:
+        condition: service_healthy

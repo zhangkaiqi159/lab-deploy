@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>座舱自动化测试实验室</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:"Microsoft YaHei",system-ui,sans-serif;background:#0d1117;color:#e6edf3;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:40px 20px}
+    h1{font-size:1.8rem;margin-bottom:8px;color:#58a6ff}
+    .sub{color:#8b949e;margin-bottom:32px;font-size:.9rem}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;width:100%;max-width:960px}
+    a.card{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:18px 16px;text-decoration:none;color:#e6edf3;transition:.2s}
+    a.card:hover{border-color:#58a6ff;background:#1c2128}
+    .card-icon{font-size:1.6rem;margin-bottom:8px}
+    .card-title{font-size:.95rem;font-weight:600}
+    .card-desc{font-size:.78rem;color:#8b949e;margin-top:4px}
+    footer{margin-top:40px;color:#484f58;font-size:.8rem}
+  </style>
+</head>
+<body>
+  <h1>🚀 座舱自动化测试实验室</h1>
+  <div class="sub">Cockpit Automation Testing Lab · 基础设施导航</div>
+  <div class="grid">
+    <a class="card" href="http://git.lab.internal" target="_blank">
+      <div class="card-icon">🦊</div>
+      <div class="card-title">GitLab</div>
+      <div class="card-desc">代码仓库 / MR / Wiki</div>
+    </a>
+    <a class="card" href="http://ci.lab.internal" target="_blank">
+      <div class="card-icon">⚙️</div>
+      <div class="card-title">Jenkins</div>
+      <div class="card-desc">CI/CD · 自动化测试流水线</div>
+    </a>
+    <a class="card" href="http://monitor.lab.internal" target="_blank">
+      <div class="card-icon">📊</div>
+      <div class="card-title">Grafana</div>
+      <div class="card-desc">监控大屏 · 指标可视化</div>
+    </a>
+    <a class="card" href="http://log.lab.internal" target="_blank">
+      <div class="card-icon">🔍</div>
+      <div class="card-title">Kibana</div>
+      <div class="card-desc">日志检索 · ELK 日志中心</div>
+    </a>
+    <a class="card" href="http://allure.lab.internal" target="_blank">
+      <div class="card-icon">📋</div>
+      <div class="card-title">Allure</div>
+      <div class="card-desc">测试报告中心</div>
+    </a>
+    <a class="card" href="http://minio.lab.internal" target="_blank">
+      <div class="card-icon">🗄️</div>
+      <div class="card-title">MinIO</div>
+      <div class="card-desc">对象存储 · 录像/截图/固件</div>
+    </a>
+    <a class="card" href="http://mq.lab.internal" target="_blank">
+      <div class="card-icon">🐇</div>
+      <div class="card-title">RabbitMQ</div>
+      <div class="card-desc">消息队列 · 任务分发</div>
+    </a>
+    <a class="card" href="http://llm.lab.internal" target="_blank">
+      <div class="card-icon">🤖</div>
+      <div class="card-title">Open WebUI</div>
+      <div class="card-desc">私有大模型对话界面</div>
+    </a>
+  </div>
+  <footer>座舱测试实验室 · 内网专用 · 禁止外网访问</footer>
+</body>
+</html>
