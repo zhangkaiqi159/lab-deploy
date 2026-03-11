@@ -74,7 +74,7 @@ services:
   # 原 ghcr.io/open-webui/open-webui 在国内被墙，改用 Docker Hub 镜像
   # ══════════════════════════════════════════
   open-webui:
-    image: openwebui/open-webui:main
+    image: ghcr.io/open-webui/open-webui:main
     container_name: lab-open-webui
     restart: unless-stopped
     networks: [lab-net]

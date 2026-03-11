@@ -76,19 +76,28 @@ pull_image_acr() {
     fi
 
     # 还原 ACR 路径规则（与 workflow 中 sync_image 函数保持一致）
-    # mysql:8.0          -> ACR_NAMESPACE/mysql:8.0
-    # minio/minio:latest -> ACR_NAMESPACE/minio:minio-latest
-    # prom/prometheus    -> ACR_NAMESPACE/prometheus:prom-latest
+    # mysql:8.0                          -> ACR/mysql:8.0
+    # minio/minio:latest                 -> ACR/minio:minio-latest
+    # ghcr.io/open-webui/open-webui:main -> ACR/open-webui:ghcr-main
     local name_part="${target%%:*}"
     local tag_part="${target##*:}"
+    local path_part="$name_part"
 
-    if [[ "$name_part" == */* ]]; then
-        local org="${name_part%%/*}"
-        local repo="${name_part##*/}"
+    if [[ "$name_part" == *.* ]]; then
+        # 有 registry 前缀，如 ghcr.io/open-webui/open-webui
+        path_part="${name_part#*/}"
+        local registry_prefix="${name_part%%/*}"
+        local reg_short="${registry_prefix%%.*}"
+        local repo="${path_part##*/}"
+        local acr_repo="${repo}"
+        local acr_tag="${reg_short}-${tag_part}"
+    elif [[ "$path_part" == */* ]]; then
+        local org="${path_part%%/*}"
+        local repo="${path_part##*/}"
         local acr_repo="${repo}"
         local acr_tag="${org}-${tag_part}"
     else
-        local acr_repo="${name_part}"
+        local acr_repo="${path_part}"
         local acr_tag="${tag_part}"
     fi
     local acr_src="${ACR_REGISTRY}/${ACR_NAMESPACE}/${acr_repo}:${acr_tag}"

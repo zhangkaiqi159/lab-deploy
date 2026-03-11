@@ -39,7 +39,7 @@ nginx:alpine
 
 # ── 大模型服务（LLM）─────────────────────────────────────────
 ollama/ollama:latest
-openwebui/open-webui:main
+ghcr.io/open-webui/open-webui:main
 litellm/litellm:latest
 milvusdb/milvus:v2.4.0
 bitnami/etcd:3.5
