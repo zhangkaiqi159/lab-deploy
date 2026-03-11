@@ -118,7 +118,7 @@ services:
   # ══════════════════════════════════════════
   milvus-etcd:
     # 原 quay.io/coreos/etcd 在国内不稳定，改用 bitnami 在 Docker Hub 的版本
-    image: bitnami/etcd:3.5
+    image: bitnami/etcd:latest
     container_name: lab-milvus-etcd
     restart: unless-stopped
     networks: [lab-net]

@@ -42,5 +42,5 @@ ollama/ollama:latest
 ghcr.io/open-webui/open-webui:main
 litellm/litellm:latest
 milvusdb/milvus:v2.4.0
-bitnami/etcd:3.5
+bitnami/etcd:latest
 zilliz/attu:latest

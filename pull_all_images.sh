@@ -311,8 +311,8 @@ pull_llm_images() {
 
     section "Etcd（Milvus 依赖，原 quay.io，已切换 bitnami 替代）"
     # 原：quay.io/coreos/etcd（不稳定）
-    # 已在 compose 文件改为 bitnami/etcd:3.5
-    pull_image "bitnami/etcd:3.5"
+    # 已在 compose 文件改为 bitnami/etcd:latest
+    pull_image "bitnami/etcd:latest"
 
     section "Milvus 管理界面 Attu"
     pull_image "zilliz/attu:latest"
