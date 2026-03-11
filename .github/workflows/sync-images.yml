@@ -80,14 +80,26 @@ jobs:
             local src="$1"   # 原始镜像，如 mysql:8.0
 
             # 将镜像名转换为 ACR 路径
+            # ACR 个人版仓库名只支持字母/数字/中划线/下划线，不支持斜杠
+            # 转换规则：取最后一段镜像名，org 前缀拼到 tag 前
             # mysql:8.0               -> ACR_NAMESPACE/mysql:8.0
-            # minio/minio:latest      -> ACR_NAMESPACE/minio__minio:latest
-            # gitlab/gitlab-ce:16.9.1 -> ACR_NAMESPACE/gitlab__gitlab-ce:16.9.1
+            # minio/minio:latest      -> ACR_NAMESPACE/minio:minio-latest
+            # gitlab/gitlab-ce:16.9.1 -> ACR_NAMESPACE/gitlab-ce:gitlab-16.9.1
+            # prom/node-exporter:latest -> ACR_NAMESPACE/node-exporter:prom-latest
             local name_part="${src%%:*}"   # mysql  或  minio/minio
             local tag_part="${src##*:}"    # 8.0    或  latest
-            # 把 / 换成 __ 避免 ACR 路径层级问题
-            local safe_name="${name_part//\//__}"
-            local acr_target="${ACR_REGISTRY}/${ACR_NAMESPACE}/${safe_name}:${tag_part}"
+
+            if [[ "$name_part" == */* ]]; then
+              local org="${name_part%%/*}"     # minio
+              local repo="${name_part##*/}"    # minio
+              # ACR 仓库名用 repo，tag 前加 org- 前缀区分来源
+              local acr_repo="${repo}"
+              local acr_tag="${org}-${tag_part}"
+            else
+              local acr_repo="${name_part}"
+              local acr_tag="${tag_part}"
+            fi
+            local acr_target="${ACR_REGISTRY}/${ACR_NAMESPACE}/${acr_repo}:${acr_tag}"
 
             echo ""
             echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
